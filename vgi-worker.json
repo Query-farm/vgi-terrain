@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "catalog": "terrain",
+  "worker": [
+    ".venv/bin/vgi-terrain-worker"
+  ],
+  "checks": [
+    {
+      "name": "Demo tower pairs on bundled synthetic data",
+      "sql": "SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id",
+      "rows": [
+        [
+          "high",
+          80.0
+        ],
+        [
+          "low",
+          2.0
+        ]
+      ]
+    },
+    {
+      "name": "Terrain visibility on bundled synthetic data",
+      "sql": "SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id",
+      "rows": [
+        [
+          "high",
+          true,
+          "visible"
+        ],
+        [
+          "low",
+          false,
+          "blocked"
+        ]
+      ]
+    },
+    {
+      "name": "DEM cells and surfaces on bundled synthetic data",
+      "sql": "SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif')",
+      "rows": [
+        [
+          121,
+          30.0
+        ]
+      ]
+    },
+    {
+      "name": "Empty pair relation",
+      "sql": "SELECT count(*) FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input WHERE false))",
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "name": "Multiple input batches",
+      "sql": "SELECT count(*), count(*) FILTER (WHERE visible) FROM terrain.main.visibility((SELECT i::VARCHAR pair_id, source_x, source_y, target_x, target_y, source_height_m, target_height_m FROM terrain.main.demo_input CROSS JOIN range(2501) t(i)))",
+      "rows": [
+        [
+          5002,
+          2501
+        ]
+      ]
+    },
+    {
+      "name": "Rank a suitable tower per building",
+      "sql": "WITH buildings(pair_id, building_id, tower_id) AS (VALUES ('high', 'library', 'tower-80m'), ('low', 'library', 'tower-2m')),\nvisibility AS (SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)))\nSELECT b.building_id, b.tower_id, v.status\nFROM visibility v JOIN buildings b USING(pair_id) WHERE v.visible\nQUALIFY row_number() OVER (PARTITION BY b.building_id ORDER BY v.min_clearance_m DESC, b.tower_id) = 1\nORDER BY b.building_id",
+      "rows": [
+        [
+          "library",
+          "tower-80m",
+          "visible"
+        ]
+      ]
+    },
+    {
+      "name": "Build a viewshed as rows",
+      "sql": "SELECT count(*), count(visible), count(*) FILTER (WHERE status NOT IN ('visible', 'blocked'))\nFROM terrain.main.visibility((SELECT cell_id::VARCHAR pair_id, 500015.0 source_x, 4100055.0 source_y,\nx target_x, y target_y, 80.0 source_height_m, 2.0 target_height_m FROM terrain.main.dem_cells('demo://ridge.tif')))",
+      "rows": [
+        [
+          121,
+          121,
+          0
+        ]
+      ]
+    }
+  ]
+}

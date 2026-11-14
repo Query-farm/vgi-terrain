@@ -1,0 +1,69 @@
+# GIS domain acceptance tests for terrain.
+require vgi
+
+require-env TERRAIN_WORKER
+
+statement ok
+ATTACH 'terrain' (TYPE vgi, LOCATION '{TERRAIN_WORKER}');
+
+# Demo tower pairs on bundled synthetic data
+query TT
+SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id;
+----
+high	80.0
+low	2.0
+
+# Terrain visibility on bundled synthetic data
+query TTT
+SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id;
+----
+high	true	visible
+low	false	blocked
+
+# DEM cells and surfaces on bundled synthetic data
+query TT
+SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif');
+----
+121	30.0
+
+# Empty pair relation
+query T
+SELECT count(*) FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input WHERE false));
+----
+0
+
+# Multiple input batches
+query TT
+SELECT count(*), count(*) FILTER (WHERE visible) FROM terrain.main.visibility((SELECT i::VARCHAR pair_id, source_x, source_y, target_x, target_y, source_height_m, target_height_m FROM terrain.main.demo_input CROSS JOIN range(2501) t(i)));
+----
+5002	2501
+
+# Rank a suitable tower per building
+query TTT
+WITH buildings(pair_id, building_id, tower_id) AS (VALUES ('high', 'library', 'tower-80m'), ('low', 'library', 'tower-2m')),
+visibility AS (SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)))
+SELECT b.building_id, b.tower_id, v.status
+FROM visibility v JOIN buildings b USING(pair_id) WHERE v.visible
+QUALIFY row_number() OVER (PARTITION BY b.building_id ORDER BY v.min_clearance_m DESC, b.tower_id) = 1
+ORDER BY b.building_id;
+----
+library	tower-80m	visible
+
+# Build a viewshed as rows
+query TTT
+SELECT count(*), count(visible), count(*) FILTER (WHERE status NOT IN ('visible', 'blocked'))
+FROM terrain.main.visibility((SELECT cell_id::VARCHAR pair_id, 500015.0 source_x, 4100055.0 source_y,
+x target_x, y target_y, 80.0 source_height_m, 2.0 target_height_m FROM terrain.main.dem_cells('demo://ridge.tif')));
+----
+121	121	0
+
+statement error
+SELECT * FROM terrain.main.visibility((SELECT 1 AS wrong_column));
+----
+Missing input columns
+
+# Constant controls must not accept infinity.
+statement error
+SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input), refraction_k := 'Infinity'::DOUBLE);
+----
+finite

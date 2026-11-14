@@ -16,13 +16,18 @@ from typing import Any
 
 import pyarrow as pa
 
-CATALOG_NAME = "starter"
+CATALOG_NAME = "terrain"
 
-SOURCE_URL = "https://github.com/Query-farm/vgi-starter-python"
+SOURCE_URL = "https://github.com/Query-farm/vgi-terrain"
 
 # Categories group functions in docs and agent tools. Every object's
 # ``vgi.category`` must name one of these.
 SCHEMA_CATEGORIES = [
+    {
+        "name": "gis",
+        "title": "GIS Analysis",
+        "description": "Spatial analysis over query results and geospatial assets.",
+    },
     {"name": "text", "title": "Text", "description": "Functions that build or transform strings."},
     {"name": "generators", "title": "Generators", "description": "Table functions that generate rows."},
     {"name": "api", "title": "REST APIs", "description": "Table functions that read from HTTP APIs."},
@@ -62,7 +67,7 @@ CATALOG_DOC_LLM = (
 )
 
 CATALOG_DOC_MD = (
-    "# VGI starter worker\n\n"
+    "# VGI terrain worker\n\n"
     "**An example [VGI](https://query.farm/vgi) worker that brings custom functions into DuckDB "
     "SQL.** It was generated from the Query.Farm starter template and is meant to be renamed and "
     "rewritten: every function here demonstrates one pattern you will reuse, from vectorized "
@@ -74,19 +79,19 @@ CATALOG_DOC_MD = (
 )
 
 SCHEMA_DOC_LLM = (
-    "The `main` schema holds the starter template's example functions, one per common worker "
+    "The `examples` schema holds the starter template's example functions, one per common worker "
     "pattern. `greet(name)` and `greet(name, style)` are vectorized scalars: use them inside a "
     "projection or predicate, one result per row; `style` is a constant that must be 'casual' or "
     "'formal'. `sequence_table(count, step := 1)` is a deterministic table function that returns "
     "`count` rows of `(n, squared)`; use it for demos, tests, and as a template for generators. "
     "`fetch_items(base_url, page_size := 100)` reads every item from a paginated JSON REST API as "
     "`(id, name, category, price)` rows, streaming one page per batch, retrying rate-limited "
-    "requests, and authenticating with a `starter_api` DuckDB secret or the `STARTER_API_TOKEN` "
+    "requests, and authenticating with a `terrain_api` DuckDB secret or the `TERRAIN_API_TOKEN` "
     "environment variable. Scalars cannot take named arguments; table functions can."
 )
 
 SCHEMA_DOC_MD = (
-    "## main\n\n"
+    "## examples\n\n"
     "The starter template's example functions, one per common worker pattern.\n\n"
     "- **Scalars** answer one question per row and slot into a projection or predicate.\n"
     "- **Table functions** return sets of rows, streamed to DuckDB in Arrow batches.\n"
@@ -94,10 +99,10 @@ SCHEMA_DOC_MD = (
 )
 
 AGENT_TEST_TASKS = [
-    {"name": "formal_greeting", "prompt": "Using the starter worker, greet the name 'Grace' formally."},
+    {"name": "formal_greeting", "prompt": "Using the terrain worker, greet the name 'Grace' formally."},
     {
         "name": "sum_of_squares",
-        "prompt": "Using the starter worker, what is the sum of the squared column for the first 10 rows "
+        "prompt": "Using the terrain worker, what is the sum of the squared column for the first 10 rows "
         "of the sequence with the default step?",
     },
     {
@@ -113,8 +118,28 @@ AGENT_TEST_TASKS = [
     },
 ]
 
+AGENT_TEST_TASKS.extend(
+    [
+        {
+            "name": "gis_demo_input",
+            "prompt": "Inspect the two tower heights. Use the bundled synthetic inputs and return the "
+            "columns and ordering shown in its catalog example.",
+        },
+        {
+            "name": "gis_visibility",
+            "prompt": "A tall tower clears the ridge; a low tower is blocked. Use the bundled synthetic"
+            " inputs and return the columns and ordering shown in its catalog example.",
+        },
+        {
+            "name": "gis_dem_cells",
+            "prompt": "Count cells and find the ridge elevation. Use the bundled synthetic inputs and "
+            "return the columns and ordering shown in its catalog example.",
+        },
+    ]
+)
+
 CATALOG_TAGS = {
-    "vgi.title": "VGI Starter Worker",
+    "vgi.title": "Terrain analysis",
     "vgi.subtitle": "Example DuckDB functions to rename and replace: a scalar, a table function and a REST API reader.",
     "vgi.doc_llm": CATALOG_DOC_LLM,
     "vgi.doc_md": CATALOG_DOC_MD,
@@ -123,7 +148,7 @@ CATALOG_TAGS = {
     "vgi.license": "0BSD",
     "vgi.author": "Query.Farm",
     "vgi.copyright": "Copyright 2026 Query.Farm LLC",
-    "vgi.keywords": keywords_array("vgi, duckdb, starter template, example worker, rest api, table function"),
+    "vgi.keywords": keywords_array("vgi, duckdb, terrain, DEM, visibility, viewshed, elevation"),
     "vgi.support_contact": f"{SOURCE_URL}/issues",
     "vgi.support_policy_url": f"{SOURCE_URL}#support",
     # Public analyst tasks for `vgi-lint simulate`; private graders live in vgi-agent-tests.yaml.
