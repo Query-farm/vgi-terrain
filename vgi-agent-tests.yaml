@@ -23,3 +23,19 @@ tasks:
 
   - name: gis_dem_cells
     reference_sql: "SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif')"
+
+  # Composed: dem_cells filtered by slope feeds visibility from a demo_input tower.
+  - name: gis_steep_cells_visible
+    reference_sql: >-
+      SELECT count(*) AS visible_steep_cells FROM terrain.main.visibility((SELECT c.cell_id::VARCHAR AS pair_id,
+      t.source_x, t.source_y, c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m
+      FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c
+      WHERE t.pair_id = 'high' AND c.slope_deg > 45)) WHERE visible
+
+  # Composed: demo_input 'low' pair swept over whole-metre heights through visibility (answer 59).
+  - name: gis_min_clearing_height
+    reference_sql: >-
+      SELECT min(h.r)::INTEGER AS min_height_m FROM terrain.main.visibility((SELECT 'h' || h.r AS pair_id,
+      d.source_x, d.source_y, d.target_x, d.target_y, h.r::DOUBLE AS source_height_m, d.target_height_m
+      FROM terrain.main.demo_input AS d CROSS JOIN range(0, 201) AS h(r) WHERE d.pair_id = 'low')) AS v
+      JOIN range(0, 201) AS h(r) ON v.pair_id = 'h' || h.r WHERE v.visible

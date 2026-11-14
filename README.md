@@ -27,6 +27,21 @@ Supply a north-up DEM in a projected metre CRS, with metre elevations. Raster sc
 
 Slope/aspect use finite differences; flat aspect is NULL and missing neighbours propagate unknown gradients. Defaults cap DEMs at 2 million cells and each sightline at 200,000 samples. For larger regions, tile inputs while ensuring each complete sightline is covered. Cross join towers to buildings or DEM cells in SQL before passing the resulting pairs.
 
+For example, the viewshed of each bundled tower over every bundled DEM cell (the 80 m tower sees 99 of 121 cells, the 2 m tower 55):
+
+```sql
+SELECT split_part(v.pair_id, ':', 1) AS tower,
+       count(*) FILTER (WHERE v.visible) AS visible_cells,
+       count(*) FILTER (WHERE NOT v.visible) AS blocked_cells
+FROM terrain.main.visibility((
+    SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y,
+           c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m
+    FROM terrain.main.demo_input AS t
+    CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v
+GROUP BY tower
+ORDER BY tower;
+```
+
 ## Use your data
 
 From the repository directory after `uv sync`, launch the locked environment:

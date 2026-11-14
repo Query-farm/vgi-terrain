@@ -16,6 +16,7 @@ fail_on = "warning"
 #   tooling-bug       the linter is wrong; report it upstream
 ignore = [
   # { code = "VGI146", kind = "domain-exemption", reason = "every entry point needs a key" },
+  { code = "VGI1003", kind = "domain-exemption", reason = "dem_cells' dem is the raster being analysed, chosen per query, not connection config; every example uses demo://ridge.tif because it is the only bundled offline DEM" },
 ]
 
 # Adopting the gate on a worker that already has findings? Record them once with

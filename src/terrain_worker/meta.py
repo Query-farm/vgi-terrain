@@ -135,6 +135,19 @@ AGENT_TEST_TASKS.extend(
             "prompt": "Count cells and find the ridge elevation. Use the bundled synthetic inputs and "
             "return the columns and ordering shown in its catalog example.",
         },
+        {
+            "name": "gis_steep_cells_visible",
+            "prompt": "Using the terrain worker's bundled ridge DEM (demo://ridge.tif) and the tower of the 'high' "
+            "demo pair (its source position and its 80 m height), with receivers 2 m above ground, how many DEM "
+            "cells with a slope steeper than 45 degrees can that tower see? Return one row with one BIGINT column "
+            "named visible_steep_cells.",
+        },
+        {
+            "name": "gis_min_clearing_height",
+            "prompt": "Keeping everything else about the 'low' demo tower pair the same, what is the smallest "
+            "whole-metre tower height (source_height_m) for which the terrain worker reports a clear line of "
+            "sight over the ridge? Return one row with one INTEGER column named min_height_m.",
+        },
     ]
 )
 

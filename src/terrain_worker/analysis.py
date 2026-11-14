@@ -259,6 +259,47 @@ VIS_SQL = (
 )
 
 
+# Composed examples: each combines two or more of this worker's objects in one query.
+VIEWSHED_PER_TOWER_SQL = (
+    "SELECT split_part(v.pair_id, ':', 1) AS tower, count(*) FILTER (WHERE v.visible) AS visible_cells, "
+    "count(*) FILTER (WHERE NOT v.visible) AS blocked_cells "
+    "FROM terrain.main.visibility((SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y, "
+    "c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m "
+    "FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v "
+    "GROUP BY tower ORDER BY tower"
+)
+VIEWSHED_PER_TOWER_DESCRIPTION = (
+    "Viewshed per tower: cross join each demo_input tower with every dem_cells cell centre, run visibility "
+    "on the 242 sight lines, and count visible vs blocked cells (80 m tower 99/22, 2 m tower 55/66 of 121)"
+)
+VIEWSHED_PER_TOWER_EXPECTED: list[list[Any]] = [["high", 99, 22], ["low", 55, 66]]
+
+OBSTRUCTION_CELL_SQL = (
+    "SELECT v.pair_id, round(v.min_clearance_m, 2) AS min_clearance_m, c.cell_id, c.x, c.y, c.elevation_m "
+    "FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) AS v "
+    "CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c WHERE v.status = 'blocked' "
+    "QUALIFY row_number() OVER (PARTITION BY v.pair_id "
+    "ORDER BY (c.x - v.obstruction_x) ^ 2 + (c.y - v.obstruction_y) ^ 2, c.cell_id) = 1 ORDER BY v.pair_id"
+)
+OBSTRUCTION_CELL_DESCRIPTION = (
+    "Locate what blocks each blocked pair: snap the visibility obstruction point to the nearest dem_cells "
+    "cell centre (the 2 m tower's line passes 28 m under the 30 m ridge crest cell 60)"
+)
+
+HEIGHT_SWEEP_SQL = (
+    "WITH candidates AS (SELECT 'low@' || h.height_m AS pair_id, h.height_m, d.source_x, d.source_y, "
+    "d.target_x, d.target_y, h.height_m::DOUBLE AS source_height_m, d.target_height_m "
+    "FROM terrain.main.demo_input AS d CROSS JOIN range(40, 75, 5) AS h(height_m) WHERE d.pair_id = 'low') "
+    "SELECT c.height_m, v.status, round(v.min_clearance_m, 2) AS min_clearance_m "
+    "FROM terrain.main.visibility((SELECT * FROM candidates)) AS v JOIN candidates AS c USING (pair_id) "
+    "ORDER BY c.height_m"
+)
+HEIGHT_SWEEP_DESCRIPTION = (
+    "Tower height sweep: re-run the demo_input 'low' pair through visibility at heights 40-70 m in 5 m "
+    "steps; heights up to 55 m are blocked by the ridge and 60 m is the first that clears it (+1.0 m)"
+)
+
+
 class Visibility(TableInOutGenerator[VisibilityArgs]):
     """Return one visibility assessment per input pair."""
 
@@ -277,8 +318,14 @@ class Visibility(TableInOutGenerator[VisibilityArgs]):
             RESULT,
             VIS_SQL,
             [["high", True, "visible"], ["low", False, "blocked"]],
+            composed=[(VIEWSHED_PER_TOWER_DESCRIPTION, VIEWSHED_PER_TOWER_SQL, VIEWSHED_PER_TOWER_EXPECTED)],
         )
-        examples = example(VIS_SQL, "A tall tower clears the ridge; a low tower is blocked")
+        examples = [
+            *example(VIS_SQL, "A tall tower clears the ridge; a low tower is blocked"),
+            *example(VIEWSHED_PER_TOWER_SQL, VIEWSHED_PER_TOWER_DESCRIPTION),
+            *example(OBSTRUCTION_CELL_SQL, OBSTRUCTION_CELL_DESCRIPTION),
+            *example(HEIGHT_SWEEP_SQL, HEIGHT_SWEEP_DESCRIPTION),
+        ]
 
     @classmethod
     def on_bind(cls, params: BindParams[VisibilityArgs]) -> BindResponse:
