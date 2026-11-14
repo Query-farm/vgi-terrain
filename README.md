@@ -58,6 +58,13 @@ ATTACH 'terrain' (TYPE vgi,
   LOCATION 'uv run --locked vgi-terrain-worker');
 ```
 
+Without a checkout, attach the tagged release instead:
+
+```sql
+ATTACH 'terrain' (TYPE vgi,
+  LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-terrain@v0.1.0 vgi-terrain-worker');
+```
+
 The following template expects your own source tables and paths:
 
 ```sql
