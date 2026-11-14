@@ -1,0 +1,101 @@
+affine==3.0.1
+    # via rasterio
+annotated-doc==0.0.5
+    # via typer
+anyio==4.16.0 ; sys_platform != 'emscripten'
+    # via httpx2
+attrs==26.1.0
+    # via
+    #   affine
+    #   rasterio
+backports-zstd==1.8.0 ; python_full_version < '3.14'
+    # via httpx2
+certifi==2026.10.23
+    # via
+    #   pyproj
+    #   rasterio
+cffi==2.1.1 ; platform_python_implementation != 'PyPy' and sys_platform == 'linux'
+    # via pynacl
+click==8.5.1
+    # via
+    #   rasterio
+    #   vgi-python
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via typer
+docstring-parser==0.18.0
+    # via vgi-rpc
+falcon==4.4.0
+    # via vgi-rpc
+h11==0.16.0 ; sys_platform != 'emscripten'
+    # via httpcore2
+httpcore2==2.16.0 ; sys_platform != 'emscripten'
+    # via httpx2
+httpx2==2.16.0
+    # via
+    #   vgi-python
+    #   vgi-rpc
+httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
+    # via httpx2
+idna==3.20
+    # via
+    #   anyio
+    #   httpx2
+markdown-it-py==4.2.0
+    # via rich
+mdurl==0.1.2
+    # via markdown-it-py
+msgpack==1.2.4
+    # via vgi-rpc
+numpy==2.5.4
+    # via
+    #   rasterio
+    #   shapely
+    #   vgi-terrain-worker
+platformdirs==4.14.5
+    # via vgi-python
+pyarrow==26.0.1
+    # via
+    #   vgi-python
+    #   vgi-rpc
+pycparser==3.12 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy' and sys_platform == 'linux'
+    # via cffi
+pycryptodome==4.3.0
+    # via
+    #   vgi-python
+    #   vgi-rpc
+pygments==2.21.0
+    # via rich
+pynacl==1.6.2 ; sys_platform == 'linux'
+    # via vgi-rpc
+pyparsing==3.3.3
+    # via rasterio
+pyproj==3.8.0
+    # via vgi-terrain-worker
+pywin32==312 ; sys_platform == 'win32'
+    # via vgi-rpc
+rasterio==1.5.2
+    # via vgi-terrain-worker
+rich==15.0.0
+    # via typer
+shapely==2.2.0
+    # via vgi-terrain-worker
+shellingham==1.5.4
+    # via typer
+truststore==0.10.5 ; sys_platform != 'emscripten'
+    # via
+    #   httpcore2
+    #   httpx2
+typer==0.28.0
+    # via vgi-python
+typing-extensions==4.16.0 ; python_full_version < '3.15' and sys_platform != 'emscripten'
+    # via anyio
+tzdata==2026.6 ; sys_platform == 'win32'
+    # via vgi-rpc
+vgi-python==0.51.1
+    # via vgi-terrain-worker
+vgi-rpc==0.53.1
+    # via vgi-python
+waitress==3.0.2
+    # via vgi-rpc
+zstandard==0.25.0
+    # via vgi-rpc

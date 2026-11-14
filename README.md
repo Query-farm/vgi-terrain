@@ -71,3 +71,7 @@ Run `make release-check` to build a wheel from the source archive and verify its
 ## Support
 
 Source and issue tracking are published at [Query-farm/vgi-terrain](https://github.com/Query-farm/vgi-terrain). No hosted deployment or container release is provided by publishing this source. Keep reports tied to the input CRS, resource limits and reproducible SQL. See [LICENSE](LICENSE) for the starter's license and dependency licenses for their terms.
+
+## Notebook
+
+[One ray is not a viewshed](notebooks/README.md) is an executed, portable SQL analysis of the bundled synthetic ridge.
