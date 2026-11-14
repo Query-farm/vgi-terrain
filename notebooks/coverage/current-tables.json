@@ -1,0 +1,51 @@
+{
+  "query": "SELECT * FROM duckdb_tables() WHERE database_name='terrain' ORDER BY schema_name,table_name",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "schema_oid",
+    "table_name",
+    "table_oid",
+    "comment",
+    "tags",
+    "internal",
+    "temporary",
+    "has_primary_key",
+    "estimated_size",
+    "column_count",
+    "index_count",
+    "check_constraint_count",
+    "sql"
+  ],
+  "rows": [
+    [
+      "terrain",
+      22592,
+      "main",
+      22593,
+      "demo_input",
+      22792,
+      "Two tower/building pairs across a synthetic 30 metre ridge",
+      {
+        "domain": "geospatial",
+        "vgi.category": "gis",
+        "vgi.doc_llm": "Two synthetic pairs in EPSG:32618 for demo://ridge.tif: high has an 80 m tower and low has a 2 m tower. Both receivers are 2 m above ground. No network or credentials are needed.",
+        "vgi.doc_md": "## Demo tower pairs\n\nTwo synthetic pairs in EPSG:32618 for demo://ridge.tif: high has an 80 m tower and low has a 2 m tower. Both receivers are 2 m above ground. No network or credentials are needed.",
+        "vgi.example_queries": "[{\"description\": \"Inspect the two tower heights\", \"sql\": \"SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id\"}]",
+        "vgi.executable_examples": "[{\"description\": \"Demo tower pairs on bundled synthetic data\", \"sql\": \"SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id\", \"expected_result\": [[\"high\", 80.0], [\"low\", 2.0]]}]",
+        "vgi.keywords": "[\"GIS\", \"geospatial\", \"terrain\", \"analysis\", \"Arrow\", \"SQL\"]",
+        "vgi.result_columns_schema": "[{\"name\": \"pair_id\", \"type\": \"VARCHAR\", \"description\": \"Caller-owned identity for a tower/building pair.\"}, {\"name\": \"source_x\", \"type\": \"DOUBLE\", \"description\": \"Tower X in input_crs.\"}, {\"name\": \"source_y\", \"type\": \"DOUBLE\", \"description\": \"Tower Y in input_crs.\"}, {\"name\": \"target_x\", \"type\": \"DOUBLE\", \"description\": \"Building X in input_crs.\"}, {\"name\": \"target_y\", \"type\": \"DOUBLE\", \"description\": \"Building Y in input_crs.\"}, {\"name\": \"source_height_m\", \"type\": \"DOUBLE\", \"description\": \"Tower height above DEM surface, metres.\"}, {\"name\": \"target_height_m\", \"type\": \"DOUBLE\", \"description\": \"Receiver height above DEM surface, metres.\"}]",
+        "vgi.title": "Demo tower pairs"
+      },
+      false,
+      false,
+      true,
+      0,
+      7,
+      1,
+      0,
+      "CREATE TABLE demo_input(pair_id VARCHAR, source_x DOUBLE, source_y DOUBLE, target_x DOUBLE, target_y DOUBLE, source_height_m DOUBLE, target_height_m DOUBLE, PRIMARY KEY(pair_id));"
+    ]
+  ]
+}

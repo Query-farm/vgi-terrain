@@ -96,4 +96,4 @@ Source and issue tracking are published at [Query-farm/vgi-terrain](https://gith
 
 ## Notebook
 
-[One ray is not a viewshed](notebooks/README.md) is an executed, portable SQL analysis of the bundled synthetic ridge.
+[Executed Terrain walkthroughs](notebooks/README.md) compare sampled viewsheds over the bundled synthetic ridge and separately demonstrate the public starter-schema workflow.

@@ -1,0 +1,310 @@
+{
+  "query": "SELECT * FROM duckdb_functions() WHERE database_name='terrain' ORDER BY schema_name,function_name",
+  "columns": [
+    "database_name",
+    "database_oid",
+    "schema_name",
+    "function_name",
+    "alias_of",
+    "function_type",
+    "description",
+    "comment",
+    "tags",
+    "return_type",
+    "parameters",
+    "parameter_types",
+    "varargs",
+    "macro_definition",
+    "has_side_effects",
+    "internal",
+    "extension_name",
+    "function_oid",
+    "examples",
+    "stability",
+    "categories"
+  ],
+  "rows": [
+    [
+      "terrain",
+      "22592",
+      "examples",
+      "fetch_items",
+      null,
+      "table",
+      "Read every item from a paginated REST API, one page per batch",
+      null,
+      {
+        "vgi.category": "api",
+        "vgi.doc_llm": "Read all items from a paginated JSON REST API at `base_url` and return them as rows `(id, name, category, price)`. Pages are requested `page_size` at a time (named argument, default 100) and streamed to DuckDB as they arrive. If a DuckDB secret of type `terrain_api` exists its `token` is sent as a bearer token; otherwise the `TERRAIN_API_TOKEN` environment variable is used. Rate-limit (429) and server errors are retried with backoff.",
+        "vgi.doc_md": "## fetch_items(base_url, page_size := 100)\n\nEvery item from a paginated REST API, streamed one page per batch.\n\nAuthenticate with a `terrain_api` secret or the `TERRAIN_API_TOKEN` environment variable:\n\n```sql\nCREATE SECRET (TYPE terrain_api, TOKEN 'your-token');\n```",
+        "vgi.example_queries": "[{\"description\": \"The five priciest hardware items from the public demo API\", \"sql\": \"SELECT id, name, price FROM terrain.examples.fetch_items('https://vgi-starter-api.query-farm.services/v1') WHERE category = 'hardware' ORDER BY price DESC LIMIT 5\"}, {\"description\": \"Summarize the API's items by category, ten per request\", \"sql\": \"SELECT category, count(*) AS items, avg(price) AS avg_price FROM terrain.examples.fetch_items('https://vgi-starter-api.query-farm.services/v1', page_size := 10) GROUP BY category ORDER BY category\"}]",
+        "vgi.keywords": "[\"rest api\", \"http\", \"pagination\", \"fetch\", \"items\", \"json api\", \"bearer token\"]",
+        "vgi.result_columns_schema": "[{\"name\": \"id\", \"type\": \"BIGINT\", \"description\": \"Item identifier assigned by the API.\"}, {\"name\": \"name\", \"type\": \"VARCHAR\", \"description\": \"Item display name.\"}, {\"name\": \"category\", \"type\": \"VARCHAR\", \"description\": \"Item category, e.g. 'hardware'.\"}, {\"name\": \"price\", \"type\": \"DOUBLE\", \"description\": \"Item price in US dollars.\"}]",
+        "vgi.title": "Fetch Items From API"
+      },
+      null,
+      [
+        "base_url",
+        "page_size"
+      ],
+      [
+        "VARCHAR",
+        "BIGINT"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22728,
+      [
+        "SELECT id, name, price FROM terrain.examples.fetch_items('https://vgi-starter-api.query-farm.services/v1') WHERE category = 'hardware' ORDER BY price DESC LIMIT 5",
+        "SELECT category, count(*) AS items, avg(price) AS avg_price FROM terrain.examples.fetch_items('https://vgi-starter-api.query-farm.services/v1', page_size := 10) GROUP BY category ORDER BY category"
+      ],
+      null,
+      []
+    ],
+    [
+      "terrain",
+      "22592",
+      "examples",
+      "greet",
+      null,
+      "scalar",
+      "Greet a name casually: greet('Ada') returns 'Hi, Ada!'",
+      null,
+      {
+        "vgi.category": "text",
+        "vgi.doc_llm": "Return a greeting for each input name in the requested tone. `style` must be a constant, either `'casual'` (`'Hi, Ada!'`) or `'formal'` (`'Good day, Ada.'`); any other value is rejected when the query is planned. NULL names produce NULL.",
+        "vgi.doc_md": "## greet(name, style)\n\nA greeting in the chosen tone: `'casual'` or `'formal'`.\n\n`greet('Ada', 'formal')` returns `'Good day, Ada.'`.",
+        "vgi.example_queries": "[{\"description\": \"Greet one name casually\", \"sql\": \"SELECT terrain.examples.greet('Ada') AS greeting\"}, {\"description\": \"Greet one name formally\", \"sql\": \"SELECT terrain.examples.greet('Ada', 'formal') AS greeting\"}]",
+        "vgi.keywords": "[\"greet\", \"greeting\", \"formal greeting\", \"casual greeting\", \"salutation\", \"tone\"]",
+        "vgi.title": "Greet (with tone)"
+      },
+      "VARCHAR",
+      [
+        "name"
+      ],
+      [
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22727,
+      [
+        "SELECT terrain.examples.greet('Ada') AS greeting"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "terrain",
+      "22592",
+      "examples",
+      "greet",
+      null,
+      "scalar",
+      "Greet a name in a chosen tone: greet('Ada', 'formal') returns 'Good day, Ada.'",
+      null,
+      {
+        "vgi.category": "text",
+        "vgi.doc_llm": "Return a greeting for each input name in the requested tone. `style` must be a constant, either `'casual'` (`'Hi, Ada!'`) or `'formal'` (`'Good day, Ada.'`); any other value is rejected when the query is planned. NULL names produce NULL.",
+        "vgi.doc_md": "## greet(name, style)\n\nA greeting in the chosen tone: `'casual'` or `'formal'`.\n\n`greet('Ada', 'formal')` returns `'Good day, Ada.'`.",
+        "vgi.example_queries": "[{\"description\": \"Greet one name casually\", \"sql\": \"SELECT terrain.examples.greet('Ada') AS greeting\"}, {\"description\": \"Greet one name formally\", \"sql\": \"SELECT terrain.examples.greet('Ada', 'formal') AS greeting\"}]",
+        "vgi.keywords": "[\"greet\", \"greeting\", \"formal greeting\", \"casual greeting\", \"salutation\", \"tone\"]",
+        "vgi.title": "Greet (with tone)"
+      },
+      "VARCHAR",
+      [
+        "name",
+        "style"
+      ],
+      [
+        "VARCHAR",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      false,
+      true,
+      null,
+      22727,
+      [
+        "SELECT terrain.examples.greet('Ada', 'formal') AS greeting"
+      ],
+      "CONSISTENT",
+      []
+    ],
+    [
+      "terrain",
+      "22592",
+      "examples",
+      "sequence_table",
+      null,
+      "table",
+      "Generate count rows of (n, squared), stepping n by step",
+      null,
+      {
+        "vgi.category": "generators",
+        "vgi.doc_llm": "Generate a deterministic table of `count` rows with columns `n` and `squared`, where `n` runs `0, step, 2*step, ...`. `count` is positional (0 to 1,000,000); `step` is a named argument that defaults to 1, for example `sequence_table(5, step := 2)`. Rows stream back in batches, so large counts do not buffer in memory.",
+        "vgi.doc_md": "## sequence_table(count, step := 1)\n\n`count` rows of `(n, squared)` with `n = 0, step, 2*step, ...`.\n\nDeterministic, so it is handy for tests and demos.",
+        "vgi.example_queries": "[{\"description\": \"The first five values and their squares\", \"sql\": \"SELECT n, squared FROM terrain.examples.sequence_table(5) ORDER BY n\"}, {\"description\": \"Four values stepping by ten\", \"sql\": \"SELECT n FROM terrain.examples.sequence_table(4, step := 10) ORDER BY n\"}]",
+        "vgi.executable_examples": "[{\"description\": \"Three rows stepping by two\", \"sql\": \"SELECT n, squared FROM terrain.examples.sequence_table(3, step := 2) ORDER BY n\", \"expected_result\": [[0, 0], [2, 4], [4, 16]]}, {\"description\": \"Count the rows generated\", \"sql\": \"SELECT count(*) AS rows FROM terrain.examples.sequence_table(1000)\", \"expected_result\": [[1000]]}]",
+        "vgi.keywords": "[\"sequence\", \"series\", \"range\", \"generate rows\", \"numbers\", \"squares\"]",
+        "vgi.result_columns_schema": "[{\"name\": \"n\", \"type\": \"BIGINT\", \"description\": \"The generated value: row index times step.\"}, {\"name\": \"squared\", \"type\": \"BIGINT\", \"description\": \"n multiplied by itself.\"}]",
+        "vgi.title": "Sequence Table"
+      },
+      null,
+      [
+        "count",
+        "step"
+      ],
+      [
+        "BIGINT",
+        "BIGINT"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22729,
+      [
+        "SELECT n, squared FROM terrain.examples.sequence_table(5) ORDER BY n",
+        "SELECT n FROM terrain.examples.sequence_table(4, step := 10) ORDER BY n"
+      ],
+      null,
+      []
+    ],
+    [
+      "terrain",
+      "22592",
+      "main",
+      "dem_cells",
+      null,
+      "table",
+      "Read DEM cell centres, elevation, slope and aspect",
+      null,
+      {
+        "vgi.category": "gis",
+        "vgi.doc_llm": "Read north-up projected metre DEM cells as rows. Nodata becomes NULL; finite-difference slope and aspect are NULL where neighbours are missing. Flat cells have NULL aspect. Cross join cells to observer locations and pass the endpoint pairs to visibility for a sampled viewshed. max_cells bounds memory. Elevations must be metres.",
+        "vgi.doc_md": "## DEM cells and surfaces\n\nRead north-up projected metre DEM cells as rows. Nodata becomes NULL; finite-difference slope and aspect are NULL where neighbours are missing. Flat cells have NULL aspect. Cross join cells to observer locations and pass the endpoint pairs to visibility for a sampled viewshed. max_cells bounds memory. Elevations must be metres.",
+        "vgi.example_queries": "[{\"description\": \"Count cells and find the ridge elevation\", \"sql\": \"SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif')\"}]",
+        "vgi.executable_examples": "[{\"description\": \"DEM cells and surfaces on bundled synthetic data\", \"sql\": \"SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif')\", \"expected_result\": [[121, 30.0]]}]",
+        "vgi.keywords": "[\"GIS\", \"geospatial\", \"terrain\", \"analysis\", \"Arrow\", \"SQL\"]",
+        "vgi.result_columns_schema": "[{\"name\": \"cell_id\", \"type\": \"BIGINT\", \"description\": \"Row-major DEM cell index.\"}, {\"name\": \"x\", \"type\": \"DOUBLE\", \"description\": \"Cell centre X in dem_crs.\"}, {\"name\": \"y\", \"type\": \"DOUBLE\", \"description\": \"Cell centre Y in dem_crs.\"}, {\"name\": \"elevation_m\", \"type\": \"DOUBLE\", \"description\": \"Elevation in metres; NULL for nodata.\"}, {\"name\": \"slope_deg\", \"type\": \"DOUBLE\", \"description\": \"Slope from finite differences in degrees; NULL where neighbouring data are missing.\"}, {\"name\": \"aspect_deg\", \"type\": \"DOUBLE\", \"description\": \"Downhill azimuth clockwise from north; NULL on flat or unknown terrain.\"}, {\"name\": \"dem_crs\", \"type\": \"VARCHAR\", \"description\": \"Projected horizontal CRS, with metre units.\"}]",
+        "vgi.title": "DEM cells and surfaces"
+      },
+      null,
+      [
+        "dem",
+        "max_cells"
+      ],
+      [
+        "VARCHAR",
+        "BIGINT"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22730,
+      [
+        "SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif')"
+      ],
+      null,
+      []
+    ],
+    [
+      "terrain",
+      "22592",
+      "main",
+      "demo_input",
+      null,
+      "table",
+      "Two tower/building pairs across a synthetic 30 metre ridge",
+      null,
+      {
+        "vgi.category": "gis",
+        "vgi.doc_llm": "Two synthetic pairs in EPSG:32618 for demo://ridge.tif: high has an 80 m tower and low has a 2 m tower. Both receivers are 2 m above ground. No network or credentials are needed.",
+        "vgi.doc_md": "## Demo tower pairs\n\nTwo synthetic pairs in EPSG:32618 for demo://ridge.tif: high has an 80 m tower and low has a 2 m tower. Both receivers are 2 m above ground. No network or credentials are needed.",
+        "vgi.example_queries": "[{\"description\": \"Inspect the two tower heights\", \"sql\": \"SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id\"}]",
+        "vgi.executable_examples": "[{\"description\": \"Demo tower pairs on bundled synthetic data\", \"sql\": \"SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id\", \"expected_result\": [[\"high\", 80.0], [\"low\", 2.0]]}]",
+        "vgi.keywords": "[\"GIS\", \"geospatial\", \"terrain\", \"analysis\", \"Arrow\", \"SQL\"]",
+        "vgi.result_columns_schema": "[{\"name\": \"pair_id\", \"type\": \"VARCHAR\", \"description\": \"Caller-owned identity for a tower/building pair.\"}, {\"name\": \"source_x\", \"type\": \"DOUBLE\", \"description\": \"Tower X in input_crs.\"}, {\"name\": \"source_y\", \"type\": \"DOUBLE\", \"description\": \"Tower Y in input_crs.\"}, {\"name\": \"target_x\", \"type\": \"DOUBLE\", \"description\": \"Building X in input_crs.\"}, {\"name\": \"target_y\", \"type\": \"DOUBLE\", \"description\": \"Building Y in input_crs.\"}, {\"name\": \"source_height_m\", \"type\": \"DOUBLE\", \"description\": \"Tower height above DEM surface, metres.\"}, {\"name\": \"target_height_m\", \"type\": \"DOUBLE\", \"description\": \"Receiver height above DEM surface, metres.\"}]",
+        "vgi.title": "Demo tower pairs"
+      },
+      null,
+      [],
+      [],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22731,
+      [
+        "SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id"
+      ],
+      null,
+      []
+    ],
+    [
+      "terrain",
+      "22592",
+      "main",
+      "visibility",
+      null,
+      "table",
+      "Assess terrain obstruction between tower and building pairs",
+      null,
+      {
+        "vgi.category": "gis",
+        "vgi.doc_llm": "Evaluate terrain visibility between query-supplied tower/building pairs and inspect DEM elevation, slope and aspect. Distances and heights are metres. Input coordinates have an explicit CRS; DEMs must be projected in metres. Missing terrain yields unknown visibility. Synthetic demo assets ship in the wheel. The main schema exposes demo_input, visibility and dem_cells; the examples schema retains SDK regression recipes. Heights are above the DEM surface. This is sampled terrain visibility, not a radio propagation model. Nodata produces NULL visible; invalid inputs fail.",
+        "vgi.doc_md": "## Terrain visibility\n\nEvaluate terrain visibility between query-supplied tower/building pairs and inspect DEM elevation, slope and aspect. Distances and heights are metres. Input coordinates have an explicit CRS; DEMs must be projected in metres. Missing terrain yields unknown visibility. Synthetic demo assets ship in the wheel. The main schema exposes demo_input, visibility and dem_cells; the examples schema retains SDK regression recipes. Heights are above the DEM surface. This is sampled terrain visibility, not a radio propagation model. Nodata produces NULL visible; invalid inputs fail.",
+        "vgi.example_queries": "[{\"description\": \"A tall tower clears the ridge; a low tower is blocked\", \"sql\": \"SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id\"}, {\"description\": \"Viewshed per tower: cross join each demo_input tower with every dem_cells cell centre, run visibility on the 242 sight lines, and count visible vs blocked cells (80 m tower 99/22, 2 m tower 55/66 of 121)\", \"sql\": \"SELECT split_part(v.pair_id, ':', 1) AS tower, count(*) FILTER (WHERE v.visible) AS visible_cells, count(*) FILTER (WHERE NOT v.visible) AS blocked_cells FROM terrain.main.visibility((SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y, c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v GROUP BY tower ORDER BY tower\"}, {\"description\": \"Locate what blocks each blocked pair: snap the visibility obstruction point to the nearest dem_cells cell centre (the 2 m tower's line passes 28 m under the 30 m ridge crest cell 60)\", \"sql\": \"SELECT v.pair_id, round(v.min_clearance_m, 2) AS min_clearance_m, c.cell_id, c.x, c.y, c.elevation_m FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) AS v CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c WHERE v.status = 'blocked' QUALIFY row_number() OVER (PARTITION BY v.pair_id ORDER BY (c.x - v.obstruction_x) ^ 2 + (c.y - v.obstruction_y) ^ 2, c.cell_id) = 1 ORDER BY v.pair_id\"}, {\"description\": \"Tower height sweep: re-run the demo_input 'low' pair through visibility at heights 40-70 m in 5 m steps; heights up to 55 m are blocked by the ridge and 60 m is the first that clears it (+1.0 m)\", \"sql\": \"WITH candidates AS (SELECT 'low@' || h.height_m AS pair_id, h.height_m, d.source_x, d.source_y, d.target_x, d.target_y, h.height_m::DOUBLE AS source_height_m, d.target_height_m FROM terrain.main.demo_input AS d CROSS JOIN range(40, 75, 5) AS h(height_m) WHERE d.pair_id = 'low') SELECT c.height_m, v.status, round(v.min_clearance_m, 2) AS min_clearance_m FROM terrain.main.visibility((SELECT * FROM candidates)) AS v JOIN candidates AS c USING (pair_id) ORDER BY c.height_m\"}]",
+        "vgi.executable_examples": "[{\"description\": \"Terrain visibility on bundled synthetic data\", \"sql\": \"SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id\", \"expected_result\": [[\"high\", true, \"visible\"], [\"low\", false, \"blocked\"]]}, {\"description\": \"Viewshed per tower: cross join each demo_input tower with every dem_cells cell centre, run visibility on the 242 sight lines, and count visible vs blocked cells (80 m tower 99/22, 2 m tower 55/66 of 121)\", \"sql\": \"SELECT split_part(v.pair_id, ':', 1) AS tower, count(*) FILTER (WHERE v.visible) AS visible_cells, count(*) FILTER (WHERE NOT v.visible) AS blocked_cells FROM terrain.main.visibility((SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y, c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v GROUP BY tower ORDER BY tower\", \"expected_result\": [[\"high\", 99, 22], [\"low\", 55, 66]]}]",
+        "vgi.keywords": "[\"GIS\", \"geospatial\", \"terrain\", \"analysis\", \"Arrow\", \"SQL\"]",
+        "vgi.result_columns_schema": "[{\"name\": \"pair_id\", \"type\": \"VARCHAR\", \"description\": \"Input pair identity, suitable for joining to towers and buildings.\"}, {\"name\": \"visible\", \"type\": \"BOOLEAN\", \"description\": \"True if all sampled terrain clears the sight line; NULL if coverage is unknown.\"}, {\"name\": \"distance_m\", \"type\": \"DOUBLE\", \"description\": \"Horizontal distance in the projected DEM CRS, metres.\"}, {\"name\": \"min_clearance_m\", \"type\": \"DOUBLE\", \"description\": \"Smallest interior sight-line clearance above terrain, metres.\"}, {\"name\": \"obstruction_x\", \"type\": \"DOUBLE\", \"description\": \"Worst obstruction X in dem_crs, only when blocked.\"}, {\"name\": \"obstruction_y\", \"type\": \"DOUBLE\", \"description\": \"Worst obstruction Y in dem_crs, only when blocked.\"}, {\"name\": \"sample_count\", \"type\": \"BIGINT\", \"description\": \"Number of elevation samples used along this sight line.\"}, {\"name\": \"status\", \"type\": \"VARCHAR\", \"description\": \"visible, blocked, outside_dem, or nodata; unknown terrain is never reported clear.\"}, {\"name\": \"sightline_wkb\", \"type\": \"BLOB\", \"description\": \"3D WKB sight line with absolute endpoint elevations; NULL without terrain coverage.\"}, {\"name\": \"dem_crs\", \"type\": \"VARCHAR\", \"description\": \"Horizontal coordinate reference system of the output geometry and obstruction.\"}]",
+        "vgi.title": "Terrain visibility"
+      },
+      null,
+      [
+        "data",
+        "step_m",
+        "input_crs",
+        "max_samples",
+        "max_cells",
+        "refraction_k",
+        "dem"
+      ],
+      [
+        "TABLE",
+        "DOUBLE",
+        "VARCHAR",
+        "BIGINT",
+        "BIGINT",
+        "DOUBLE",
+        "VARCHAR"
+      ],
+      null,
+      null,
+      null,
+      true,
+      null,
+      22732,
+      [
+        "SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id",
+        "SELECT split_part(v.pair_id, ':', 1) AS tower, count(*) FILTER (WHERE v.visible) AS visible_cells, count(*) FILTER (WHERE NOT v.visible) AS blocked_cells FROM terrain.main.visibility((SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y, c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v GROUP BY tower ORDER BY tower",
+        "SELECT v.pair_id, round(v.min_clearance_m, 2) AS min_clearance_m, c.cell_id, c.x, c.y, c.elevation_m FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) AS v CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c WHERE v.status = 'blocked' QUALIFY row_number() OVER (PARTITION BY v.pair_id ORDER BY (c.x - v.obstruction_x) ^ 2 + (c.y - v.obstruction_y) ^ 2, c.cell_id) = 1 ORDER BY v.pair_id",
+        "WITH candidates AS (SELECT 'low@' || h.height_m AS pair_id, h.height_m, d.source_x, d.source_y, d.target_x, d.target_y, h.height_m::DOUBLE AS source_height_m, d.target_height_m FROM terrain.main.demo_input AS d CROSS JOIN range(40, 75, 5) AS h(height_m) WHERE d.pair_id = 'low') SELECT c.height_m, v.status, round(v.min_clearance_m, 2) AS min_clearance_m FROM terrain.main.visibility((SELECT * FROM candidates)) AS v JOIN candidates AS c USING (pair_id) ORDER BY c.height_m"
+      ],
+      null,
+      []
+    ]
+  ]
+}

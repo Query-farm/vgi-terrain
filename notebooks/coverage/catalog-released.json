@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "repository": "Query-farm/vgi-terrain",
+  "revision": "b08c5c9f06937f34ab65684f26ccda4635ee4e98",
+  "captured_at": "2026-11-14T22:13:53.077918+00:00",
+  "default_schema": "main",
+  "scope": "all_public_functions_and_tables",
+  "complete": true,
+  "evidence": [
+    {
+      "path": "coverage/released-functions.json",
+      "sha256": "a7894ef4725114580770c26028f9111e351f215558e75b0a02c28c88a0fb2db4",
+      "description": "Complete worker-filtered functions export through actual published Haybarn"
+    },
+    {
+      "path": "coverage/released-tables.json",
+      "sha256": "8b6e263a7c159eb967cf8df43b07183ea2c3ae7387d27f56ea904c40cfbbf9a2",
+      "description": "Complete worker-filtered tables export through actual published Haybarn"
+    },
+    {
+      "path": "coverage/released-views.json",
+      "sha256": "6a89bb480a690bf0eb7e1d9bdf727adcbba4c8c6757f5fc90689ba69499be369",
+      "description": "Complete worker-filtered views export through actual published Haybarn"
+    }
+  ],
+  "objects": [
+    {
+      "schema": "examples",
+      "name": "fetch_items",
+      "kind": "function",
+      "signatures": [
+        "fetch_items(VARCHAR, BIGINT)"
+      ],
+      "authentication": "optional",
+      "access": "read"
+    },
+    {
+      "schema": "examples",
+      "name": "greet",
+      "kind": "function",
+      "signatures": [
+        "greet(VARCHAR)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "examples",
+      "name": "greet",
+      "kind": "function",
+      "signatures": [
+        "greet(VARCHAR, VARCHAR)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "examples",
+      "name": "sequence_table",
+      "kind": "function",
+      "signatures": [
+        "sequence_table(BIGINT, BIGINT)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "dem_cells",
+      "kind": "function",
+      "signatures": [
+        "dem_cells(VARCHAR, BIGINT)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "demo_input",
+      "kind": "function",
+      "signatures": [
+        "demo_input()"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "visibility",
+      "kind": "function",
+      "signatures": [
+        "visibility(TABLE, DOUBLE, VARCHAR, BIGINT, BIGINT, DOUBLE, VARCHAR)"
+      ],
+      "authentication": "none",
+      "access": "read"
+    },
+    {
+      "schema": "main",
+      "name": "demo_input",
+      "kind": "table",
+      "signatures": [
+        "TABLE"
+      ],
+      "authentication": "none",
+      "access": "read"
+    }
+  ]
+}
