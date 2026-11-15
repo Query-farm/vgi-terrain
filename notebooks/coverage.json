@@ -26,14 +26,6 @@
   },
   "notebooks": [
     {
-      "path": "02_paginated_inventory_report.ipynb",
-      "sha256": "41a7d7bc2d5c13215ca85243dd9a3c9caee4babedee731af656e41f345beab69",
-      "execution": {
-        "path": "coverage/run-02.json",
-        "sha256": "fead2d27e5000699428732d3a07007db87196def70c472a1a6e1024208e1c709"
-      }
-    },
-    {
       "path": "01_one_ray_is_not_a_viewshed.ipynb",
       "sha256": "bf2dda2737f130cb3978ccb7278754bef6855305489b937e139543d4e29b6ffb",
       "execution": {
@@ -80,40 +72,6 @@
     {
       "object": {
         "schema": "main",
-        "name": "demo_input"
-      },
-      "notebook": "01_one_ray_is_not_a_viewshed.ipynb",
-      "sql": [
-        {
-          "cell": "fd482f9a",
-          "reference": "terrain.main.demo_input"
-        }
-      ],
-      "narrative_cells": [
-        "9982522d"
-      ],
-      "result_cells": [
-        "7fb6e3c1"
-      ],
-      "interpretation_cells": [
-        "2e7f3859"
-      ],
-      "review": {
-        "status": "approved",
-        "reviewer": "/root/notebooks_sympy",
-        "reviewed_at": "2026-11-14T22:27:13.387348+00:00",
-        "notebook_sha256": "bf2dda2737f130cb3978ccb7278754bef6855305489b937e139543d4e29b6ffb",
-        "catalog_sha256": [
-          "4d76800712e4121591217736159e9ff08829e82538144ad92c6ead15f971fc55",
-          "ed0da7e2a541e1f01432c2755753db2f48c960f20d844950784eeee7795a8728"
-        ],
-        "purpose": "Use the bundled observer and receiver geometry as the origin and highlighted cross-ridge target, then replace only selected observer height.",
-        "finding": "Low reference position and2m receiver height seed244rays; highlighted80mroute is inspected separately, avoiding inference from a single ray to the whole population."
-      }
-    },
-    {
-      "object": {
-        "schema": "main",
         "name": "visibility"
       },
       "notebook": "01_one_ray_is_not_a_viewshed.ipynb",
@@ -143,108 +101,6 @@
         ],
         "purpose": "Evaluate two complete sampled receiver populations and independently reconstruct one ray with curvature.",
         "finding": "Default80m observer sees99/121 versus fixed2m reference55/121; selected highlighted route clears. TenSQL invariants verify known/unknown semantics and independently reconstructed minimum within1e-10m."
-      }
-    },
-    {
-      "object": {
-        "schema": "examples",
-        "name": "fetch_items"
-      },
-      "notebook": "02_paginated_inventory_report.ipynb",
-      "sql": [
-        {
-          "cell": "fetch-sql",
-          "reference": "terrain.examples.fetch_items"
-        }
-      ],
-      "narrative_cells": [
-        "fetch-question"
-      ],
-      "result_cells": [
-        "fetch-finding"
-      ],
-      "interpretation_cells": [
-        "fetch-finding"
-      ],
-      "review": {
-        "status": "approved",
-        "reviewer": "/root/notebooks_sympy",
-        "reviewed_at": "2026-11-14T22:27:13.387348+00:00",
-        "notebook_sha256": "41a7d7bc2d5c13215ca85243dd9a3c9caee4babedee731af656e41f345beab69",
-        "catalog_sha256": [
-          "4d76800712e4121591217736159e9ff08829e82538144ad92c6ead15f971fc55",
-          "ed0da7e2a541e1f01432c2755753db2f48c960f20d844950784eeee7795a8728"
-        ],
-        "purpose": "Retrieve every page of an explicit local synthetic inventory before computing per-item affordability.",
-        "finding": "Exactly3GETs with2items per page yield6uniqueIDs and420USD total; noAuthorization header, noSQLsecrets, realworker paginates.50USDbudget selects3items, not just the first page."
-      }
-    },
-    {
-      "object": {
-        "schema": "examples",
-        "name": "sequence_table"
-      },
-      "notebook": "02_paginated_inventory_report.ipynb",
-      "sql": [
-        {
-          "cell": "sequence-sql",
-          "reference": "terrain.examples.sequence_table"
-        }
-      ],
-      "narrative_cells": [
-        "sequence-question"
-      ],
-      "result_cells": [
-        "sequence-finding"
-      ],
-      "interpretation_cells": [
-        "sequence-finding"
-      ],
-      "review": {
-        "status": "approved",
-        "reviewer": "/root/notebooks_sympy",
-        "reviewed_at": "2026-11-14T22:27:13.387348+00:00",
-        "notebook_sha256": "41a7d7bc2d5c13215ca85243dd9a3c9caee4babedee731af656e41f345beab69",
-        "catalog_sha256": [
-          "4d76800712e4121591217736159e9ff08829e82538144ad92c6ead15f971fc55",
-          "ed0da7e2a541e1f01432c2755753db2f48c960f20d844950784eeee7795a8728"
-        ],
-        "purpose": "Generate a fixed seven-budget scenario relation to separate changed decision threshold from input completeness.",
-        "finding": "Budgets0,25,...150produce counts0,1,3,4,5,5,6. The selected scenario matches item-level filtering; no interpolation, basket optimization or squared-cost assumption is made."
-      }
-    },
-    {
-      "object": {
-        "schema": "examples",
-        "name": "greet"
-      },
-      "notebook": "02_paginated_inventory_report.ipynb",
-      "sql": [
-        {
-          "cell": "greeting-sql",
-          "reference": "terrain.examples.greet"
-        }
-      ],
-      "narrative_cells": [
-        "greeting-question"
-      ],
-      "result_cells": [
-        "greeting-finding"
-      ],
-      "interpretation_cells": [
-        "greeting-finding"
-      ],
-      "review": {
-        "status": "approved",
-        "reviewer": "/root/notebooks_sympy",
-        "reviewed_at": "2026-11-14T22:27:13.387348+00:00",
-        "notebook_sha256": "41a7d7bc2d5c13215ca85243dd9a3c9caee4babedee731af656e41f345beab69",
-        "catalog_sha256": [
-          "4d76800712e4121591217736159e9ff08829e82538144ad92c6ead15f971fc55",
-          "ed0da7e2a541e1f01432c2755753db2f48c960f20d844950784eeee7795a8728"
-        ],
-        "purpose": "Format two local reviewer previews while preserving the distinction between a known synthetic name and missing identity.",
-        "finding": "Both scalar overloads preserveNULL; two known names receive local preview text and the missing-name preview remainsNULL. Text reflects selected affordable count, never sends a message or claims identity resolution."
       }
     }
   ]

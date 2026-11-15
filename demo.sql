@@ -1,18 +1,18 @@
 -- Offline acceptance demos. Run with: uv run --with duckdb==2.0.0 python scripts/run_demo.py
 -- The runner loads VGI, attaches this worker, and installs Spatial for geometry joins.
 
--- Demo tower pairs on bundled synthetic data
-SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id;
+-- Ridge tower pairs on bundled synthetic data
+SELECT pair_id, source_height_m FROM terrain.main.ridge_tower_pairs ORDER BY pair_id;
 
 -- Terrain visibility on bundled synthetic data
-SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id;
+SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs)) ORDER BY pair_id;
 
 -- DEM cells and surfaces on bundled synthetic data
 SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif');
 
 -- Rank a suitable tower per building
 WITH buildings(pair_id, building_id, tower_id) AS (VALUES ('high', 'library', 'tower-80m'), ('low', 'library', 'tower-2m')),
-visibility AS (SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)))
+visibility AS (SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs)))
 SELECT b.building_id, b.tower_id, v.status
 FROM visibility v JOIN buildings b USING(pair_id) WHERE v.visible
 QUALIFY row_number() OVER (PARTITION BY b.building_id ORDER BY v.min_clearance_m DESC, b.tower_id) = 1

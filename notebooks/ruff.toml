@@ -1,8 +1,5 @@
 line-length = 100
-builtins = ["summary", "cells", "views", "reference", "routes", "checks", "profile", "inventory", "budget_grid", "previews"]
+builtins = ["summary", "cells", "views", "reference", "routes", "checks", "profile"]
 exclude = [".venv", "artifacts", "validation", ".vgi-examples"]
 [lint.per-file-ignores]
 "*.ipynb" = ["E501"]
-"terrain_fixture.py" = ["E501"]
-[format]
-exclude = ["terrain_fixture.py"]

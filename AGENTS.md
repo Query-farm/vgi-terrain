@@ -22,30 +22,29 @@ Faster loops while iterating: `make test-unit`, `make test-sql`, `make lint-expl
 
 ```
 src/terrain_worker/
-  worker.py        # assembles the catalog; add new functions to FUNCTIONS
+  worker.py        # assembles the catalog (one `main` schema)
   meta.py          # catalog/schema metadata + helpers (object_tags, column)
-  greet.py         # scalar example (overloads, ConstParam choices)
-  sequence.py      # table function example (named args, streaming state)
-  fetch_items.py   # REST API table function (pagination, retries, secrets)
-tests/             # pytest unit tests (in-process client)
+  analysis.py      # visibility, dem_cells, ridge_tower_pairs; add new functions to GIS_FUNCTIONS
+  support.py       # shared validation, CRS and metadata helpers
+  raster_support.py  # bounded raster I/O
+  data/ridge.tif   # bundled synthetic DEM (demo://ridge.tif)
+tests/             # pytest unit tests
 test/sql/          # sqllogictest files run through DuckDB
-test/mock_api/     # offline mock of the REST API used by tests
-examples/          # recipes: pushdown, caching, catalog tables, aggregates, COPY …
 ci/                # integration harness used by `make test-sql` and CI
-scripts/           # vgi_template.py (init / template-diff)
+scripts/           # run_demo.py, verify_*.py, vgi_template.py (init / template-diff)
 vgi-agent-tests.yaml  # private graders for the agent test tasks
 ```
 
 ## Recipe: add a function
 
-1. Create `src/terrain_worker/<name>.py`. Copy the closest example: `greet.py` for a
-   scalar, `sequence.py` for a generator, `fetch_items.py` for an API.
+1. Add the class to `src/terrain_worker/analysis.py` (or a new module). Copy the closest
+   existing function: `Visibility` for a table in-out function, `DemCells` for a generator.
 2. Declare arguments with `Annotated[..., Param(...)]`/`ConstParam(...)` (scalars) or a
    frozen dataclass of `Annotated[..., Arg(...)]` (table functions). Use `Arg(0, ...)`
    for positional arguments and `Arg("name", default=...)` for named ones.
 3. Give the class a `class Meta` with `name`, `description`, `tags=object_tags(...)`
    and `examples`.
-4. Add the class to `FUNCTIONS` in `src/terrain_worker/worker.py`.
+4. Add the class to `GIS_FUNCTIONS` in `src/terrain_worker/analysis.py`.
 
 Then, for every new function:
 
@@ -56,7 +55,7 @@ Then, for every new function:
    (`terrain.main.fn(...)`): project, filter or aggregate rather than `SELECT *`.
 2. **Executable examples:** if the function is deterministic and needs no network,
    add an `executable_examples` entry with `ORDER BY` and an `expected_result`.
-3. **SQL test:** add cases to `test/sql/terrain.test`, or a new `test/sql/<name>.test`
+3. **SQL test:** add cases to `test/sql/gis.test`, or a new `test/sql/<name>.test`
    with the same header (`require vgi`, `require-env TERRAIN_WORKER`, then `ATTACH`).
    Avoid expected-error text that depends on SDK wording; use `<REGEX>:.*` for errors you
    don't control.
@@ -97,7 +96,8 @@ reviewed. It's optional, so run it before publishing.
 | write data out to a file or service | `COPY … TO` copy function |
 | accept INSERT / UPDATE / DELETE | writable catalog table: `Table(insert_function=…, update_function=…, delete_function=…)` |
 
-Recipes for most kinds are in `examples/`. Writable tables have no recipe:
+Recipes for most kinds are in the [vgi-starter-python](https://github.com/Query-farm/vgi-starter-python)
+template's `examples/`. Writable tables have no recipe:
 
 A writable table is a catalog `Table` that names a table in-out function per operation in
 `insert_function`, `update_function` and `delete_function`, with the richest result each one
@@ -130,7 +130,7 @@ in the vgi-python docs.
 - **State must be serializable.** Table-function state (`initial_state`/`process`) must subclass `ArrowSerializableDataclass`. Over HTTP each batch can be served by a different process, so the cursor travels with the request. Keep it small, and never put secrets in it.
 - **Examples must be deterministic.** Add `ORDER BY`, and no `now()`, random values or
   network. Examples that hit a live API go in `examples`, not `executable_examples`.
-- **Credentials.** Read them from a DuckDB secret first (`CREATE SECRET (TYPE terrain_api, …)`),
+- **Credentials.** Read them from a DuckDB secret first (`CREATE SECRET (TYPE <name>, …)`),
   then from an environment variable. Never put them in logs, examples or the repo, and
   keep them out of table-function state unless the state rule above says
   the SDK encrypts it. Workers that need real credentials set `execute: false` on the metadata check.
@@ -160,7 +160,5 @@ in the vgi-python docs.
 ## Useful prompts
 
 - "Add a scalar `slugify(text VARCHAR) -> VARCHAR` with full metadata and tests."
-- "Replace `fetch_items` with a table function for <API>. Map its JSON to typed columns,
-  read the token from a `terrain_api` secret, and add mock-server tests."
-- "Add a catalog table `countries` (code, name) with a primary key, following
-  `examples/catalog_tables`."
+- "Add a table function `horizon(dem, x, y)` returning the horizon angle per azimuth, with
+  full metadata, executable examples on demo://ridge.tif and SQL tests."

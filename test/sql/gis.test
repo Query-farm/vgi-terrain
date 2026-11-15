@@ -6,16 +6,16 @@ require-env TERRAIN_WORKER
 statement ok
 ATTACH 'terrain' (TYPE vgi, LOCATION '{TERRAIN_WORKER}');
 
-# Demo tower pairs on bundled synthetic data
+# Ridge tower pairs on bundled synthetic data
 query TT
-SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id;
+SELECT pair_id, source_height_m FROM terrain.main.ridge_tower_pairs ORDER BY pair_id;
 ----
 high	80.0
 low	2.0
 
 # Terrain visibility on bundled synthetic data
 query TTT
-SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id;
+SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs)) ORDER BY pair_id;
 ----
 high	true	visible
 low	false	blocked
@@ -28,20 +28,20 @@ SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif'
 
 # Empty pair relation
 query T
-SELECT count(*) FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input WHERE false));
+SELECT count(*) FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs WHERE false));
 ----
 0
 
 # Multiple input batches
 query TT
-SELECT count(*), count(*) FILTER (WHERE visible) FROM terrain.main.visibility((SELECT i::VARCHAR pair_id, source_x, source_y, target_x, target_y, source_height_m, target_height_m FROM terrain.main.demo_input CROSS JOIN range(2501) t(i)));
+SELECT count(*), count(*) FILTER (WHERE visible) FROM terrain.main.visibility((SELECT i::VARCHAR pair_id, source_x, source_y, target_x, target_y, source_height_m, target_height_m FROM terrain.main.ridge_tower_pairs CROSS JOIN range(2501) t(i)));
 ----
 5002	2501
 
 # Rank a suitable tower per building
 query TTT
 WITH buildings(pair_id, building_id, tower_id) AS (VALUES ('high', 'library', 'tower-80m'), ('low', 'library', 'tower-2m')),
-visibility AS (SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)))
+visibility AS (SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs)))
 SELECT b.building_id, b.tower_id, v.status
 FROM visibility v JOIN buildings b USING(pair_id) WHERE v.visible
 QUALIFY row_number() OVER (PARTITION BY b.building_id ORDER BY v.min_clearance_m DESC, b.tower_id) = 1
@@ -57,22 +57,22 @@ x target_x, y target_y, 80.0 source_height_m, 2.0 target_height_m FROM terrain.m
 ----
 121	121	0
 
-# Composed: viewshed per demo tower (demo_input x dem_cells -> visibility)
+# Composed: viewshed per sample tower (ridge_tower_pairs x dem_cells -> visibility)
 query TII
-SELECT split_part(v.pair_id, ':', 1) AS tower, count(*) FILTER (WHERE v.visible) AS visible_cells, count(*) FILTER (WHERE NOT v.visible) AS blocked_cells FROM terrain.main.visibility((SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y, c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v GROUP BY tower ORDER BY tower;
+SELECT split_part(v.pair_id, ':', 1) AS tower, count(*) FILTER (WHERE v.visible) AS visible_cells, count(*) FILTER (WHERE NOT v.visible) AS blocked_cells FROM terrain.main.visibility((SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y, c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m FROM terrain.main.ridge_tower_pairs AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v GROUP BY tower ORDER BY tower;
 ----
 high	99	22
 low	55	66
 
 # Composed: obstruction snapped to its DEM cell (visibility x dem_cells)
 query TRIRRR
-SELECT v.pair_id, round(v.min_clearance_m, 2) AS min_clearance_m, c.cell_id, c.x, c.y, c.elevation_m FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) AS v CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c WHERE v.status = 'blocked' QUALIFY row_number() OVER (PARTITION BY v.pair_id ORDER BY (c.x - v.obstruction_x) ^ 2 + (c.y - v.obstruction_y) ^ 2, c.cell_id) = 1 ORDER BY v.pair_id;
+SELECT v.pair_id, round(v.min_clearance_m, 2) AS min_clearance_m, c.cell_id, c.x, c.y, c.elevation_m FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs)) AS v CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c WHERE v.status = 'blocked' QUALIFY row_number() OVER (PARTITION BY v.pair_id ORDER BY (c.x - v.obstruction_x) ^ 2 + (c.y - v.obstruction_y) ^ 2, c.cell_id) = 1 ORDER BY v.pair_id;
 ----
 low	-28.0	60	500055.0	4100055.0	30.0
 
-# Composed: tower height sweep (demo_input x range -> visibility)
+# Composed: tower height sweep (ridge_tower_pairs x range -> visibility)
 query ITR
-WITH candidates AS (SELECT 'low@' || h.height_m AS pair_id, h.height_m, d.source_x, d.source_y, d.target_x, d.target_y, h.height_m::DOUBLE AS source_height_m, d.target_height_m FROM terrain.main.demo_input AS d CROSS JOIN range(40, 75, 5) AS h(height_m) WHERE d.pair_id = 'low') SELECT c.height_m, v.status, round(v.min_clearance_m, 2) AS min_clearance_m FROM terrain.main.visibility((SELECT * FROM candidates)) AS v JOIN candidates AS c USING (pair_id) ORDER BY c.height_m;
+WITH candidates AS (SELECT 'low@' || h.height_m AS pair_id, h.height_m, d.source_x, d.source_y, d.target_x, d.target_y, h.height_m::DOUBLE AS source_height_m, d.target_height_m FROM terrain.main.ridge_tower_pairs AS d CROSS JOIN range(40, 75, 5) AS h(height_m) WHERE d.pair_id = 'low') SELECT c.height_m, v.status, round(v.min_clearance_m, 2) AS min_clearance_m FROM terrain.main.visibility((SELECT * FROM candidates)) AS v JOIN candidates AS c USING (pair_id) ORDER BY c.height_m;
 ----
 40	blocked	-9.0
 45	blocked	-6.5
@@ -89,6 +89,6 @@ Missing input columns
 
 # Constant controls must not accept infinity.
 statement error
-SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input), refraction_k := 'Infinity'::DOUBLE);
+SELECT * FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs), refraction_k := 'Infinity'::DOUBLE);
 ----
 finite

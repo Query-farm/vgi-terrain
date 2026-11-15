@@ -45,9 +45,8 @@ GIS_DESCRIPTION = (
     "inspect DEM elevation, slope and aspect. "
     "Distances and heights are metres. Input coordinates have an explicit CRS; DEMs "
     "must be projected in metres. "
-    "Missing terrain yields unknown visibility. Synthetic demo assets ship in the wheel. "
-    "The main schema exposes demo_input, visibility and dem_cells; the examples schema "
-    "retains SDK regression recipes."
+    "Missing terrain yields unknown visibility. Synthetic sample assets ship in the wheel. "
+    "The main schema exposes visibility, dem_cells and the ridge_tower_pairs sample table."
 )
 
 INPUT_SCHEMA = schema_of(
@@ -255,7 +254,7 @@ class VisibilityArgs:
 
 VIS_SQL = (
     "SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM "
-    "terrain.main.demo_input)) ORDER BY pair_id"
+    "terrain.main.ridge_tower_pairs)) ORDER BY pair_id"
 )
 
 
@@ -265,18 +264,18 @@ VIEWSHED_PER_TOWER_SQL = (
     "count(*) FILTER (WHERE NOT v.visible) AS blocked_cells "
     "FROM terrain.main.visibility((SELECT t.pair_id || ':' || c.cell_id AS pair_id, t.source_x, t.source_y, "
     "c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m "
-    "FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v "
+    "FROM terrain.main.ridge_tower_pairs AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c)) AS v "
     "GROUP BY tower ORDER BY tower"
 )
 VIEWSHED_PER_TOWER_DESCRIPTION = (
-    "Viewshed per tower: cross join each demo_input tower with every dem_cells cell centre, run visibility "
+    "Viewshed per tower: cross join each ridge_tower_pairs tower with every dem_cells cell centre, run visibility "
     "on the 242 sight lines, and count visible vs blocked cells (80 m tower 99/22, 2 m tower 55/66 of 121)"
 )
 VIEWSHED_PER_TOWER_EXPECTED: list[list[Any]] = [["high", 99, 22], ["low", 55, 66]]
 
 OBSTRUCTION_CELL_SQL = (
     "SELECT v.pair_id, round(v.min_clearance_m, 2) AS min_clearance_m, c.cell_id, c.x, c.y, c.elevation_m "
-    "FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) AS v "
+    "FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs)) AS v "
     "CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c WHERE v.status = 'blocked' "
     "QUALIFY row_number() OVER (PARTITION BY v.pair_id "
     "ORDER BY (c.x - v.obstruction_x) ^ 2 + (c.y - v.obstruction_y) ^ 2, c.cell_id) = 1 ORDER BY v.pair_id"
@@ -289,13 +288,13 @@ OBSTRUCTION_CELL_DESCRIPTION = (
 HEIGHT_SWEEP_SQL = (
     "WITH candidates AS (SELECT 'low@' || h.height_m AS pair_id, h.height_m, d.source_x, d.source_y, "
     "d.target_x, d.target_y, h.height_m::DOUBLE AS source_height_m, d.target_height_m "
-    "FROM terrain.main.demo_input AS d CROSS JOIN range(40, 75, 5) AS h(height_m) WHERE d.pair_id = 'low') "
+    "FROM terrain.main.ridge_tower_pairs AS d CROSS JOIN range(40, 75, 5) AS h(height_m) WHERE d.pair_id = 'low') "
     "SELECT c.height_m, v.status, round(v.min_clearance_m, 2) AS min_clearance_m "
     "FROM terrain.main.visibility((SELECT * FROM candidates)) AS v JOIN candidates AS c USING (pair_id) "
     "ORDER BY c.height_m"
 )
 HEIGHT_SWEEP_DESCRIPTION = (
-    "Tower height sweep: re-run the demo_input 'low' pair through visibility at heights 40-70 m in 5 m "
+    "Tower height sweep: re-run the ridge_tower_pairs 'low' pair through visibility at heights 40-70 m in 5 m "
     "steps; heights up to 55 m are blocked by the ridge and 60 m is the first that clears it (+1.0 m)"
 )
 
@@ -406,44 +405,44 @@ class DemCells(TableFunctionGenerator[CellsArgs, Cursor]):
 
 
 @dataclass(slots=True, frozen=True, kw_only=True)
-class DemoArgs:
+class SamplePairsArgs:
     """No arguments: return the bundled tower/building pairs."""
 
 
-DEMO_SQL = "SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id"
+SAMPLE_PAIRS_SQL = "SELECT pair_id, source_height_m FROM terrain.main.ridge_tower_pairs ORDER BY pair_id"
 
 
 @init_single_worker
 @bind_fixed_schema
-class DemoInput(TableFunctionGenerator[DemoArgs, Cursor]):
+class RidgeTowerPairs(TableFunctionGenerator[SamplePairsArgs, Cursor]):
     """Return two reproducible observer/target pairs across a synthetic ridge."""
 
     FIXED_SCHEMA: ClassVar[pa.Schema] = INPUT_SCHEMA
 
     class Meta:
-        """Bundled demonstration input metadata."""
+        """Bundled sample input metadata."""
 
-        name = "demo_input"
+        name = "ridge_tower_pairs"
         description = "Two tower/building pairs across a synthetic 30 metre ridge"
         tags = metadata(
-            "Demo tower pairs",
+            "Sample tower/building pairs",
             "Two synthetic pairs in EPSG:32618 for demo://ridge.tif: high has an 80 m tower and"
             " low has a 2 m tower. Both receivers are 2 m above ground. No network or "
             "credentials are needed.",
             INPUT_SCHEMA,
-            DEMO_SQL,
+            SAMPLE_PAIRS_SQL,
             [["high", 80.0], ["low", 2.0]],
         )
-        examples = example(DEMO_SQL, "Inspect the two tower heights")
+        examples = example(SAMPLE_PAIRS_SQL, "Inspect the two tower heights")
 
     @classmethod
-    def initial_state(cls, params: ProcessParams[DemoArgs]) -> Cursor:
-        """Start before the demo rows."""
+    def initial_state(cls, params: ProcessParams[SamplePairsArgs]) -> Cursor:
+        """Start before the sample rows."""
         return Cursor()
 
     @classmethod
-    def process(cls, params: ProcessParams[DemoArgs], state: Cursor, out: OutputCollector) -> None:
-        """Emit the demo exactly once."""
+    def process(cls, params: ProcessParams[SamplePairsArgs], state: Cursor, out: OutputCollector) -> None:
+        """Emit the sample pairs exactly once."""
         if state.offset:
             out.finish()
             return
@@ -463,17 +462,17 @@ class DemoInput(TableFunctionGenerator[DemoArgs, Cursor]):
         state.offset = 2
 
 
-GIS_FUNCTIONS: list[type[Any]] = [DemoInput, Visibility, DemCells]
+GIS_FUNCTIONS: list[type[Any]] = [RidgeTowerPairs, Visibility, DemCells]
 
 GIS_TABLES = [
     Table(
-        name="demo_input",
-        function=DemoInput,
-        comment=DemoInput.Meta.description,
+        name="ridge_tower_pairs",
+        function=RidgeTowerPairs,
+        comment=RidgeTowerPairs.Meta.description,
         constraints=(
             constraint_record(
                 ["main"],
-                "demo_input",
+                "ridge_tower_pairs",
                 "id_not_null",
                 "NOT_NULL",
                 [["pair_id"]],
@@ -482,8 +481,8 @@ GIS_TABLES = [
             ),
             constraint_record(
                 ["main"],
-                "demo_input",
-                "demo_pk",
+                "ridge_tower_pairs",
+                "ridge_tower_pairs_pk",
                 "PRIMARY_KEY",
                 [["pair_id"]],
                 enforcement="ENFORCED",
@@ -491,12 +490,14 @@ GIS_TABLES = [
             ),
         ),
         tags={
-            **DemoInput.Meta.tags,
+            **RidgeTowerPairs.Meta.tags,
             "domain": "geospatial",
             "vgi.example_queries": json.dumps(
-                [{"description": ex.description, "sql": ex.sql} for ex in DemoInput.Meta.examples]
+                [{"description": ex.description, "sql": ex.sql} for ex in RidgeTowerPairs.Meta.examples]
             ),
         },
-        column_comments={f.name: (f.metadata or {}).get(b"comment", b"").decode() for f in DemoInput.FIXED_SCHEMA},
+        column_comments={
+            f.name: (f.metadata or {}).get(b"comment", b"").decode() for f in RidgeTowerPairs.FIXED_SCHEMA
+        },
     )
 ]

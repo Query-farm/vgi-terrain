@@ -2,40 +2,27 @@
 # `vgi-lint lint --ai` runs an agent on each prompt and grades it with check_sql.
 # See https://github.com/Query-farm/vgi-lint-check (VGI920).
 tasks:
-  - name: formal_greeting
-    reference_sql: SELECT terrain.examples.greet('Grace', 'formal') AS greeting
-  - name: sum_of_squares
-    reference_sql: SELECT sum(squared) AS total FROM terrain.examples.sequence_table(10)
-  - name: stepped_sequence
-    reference_sql: SELECT n FROM terrain.examples.sequence_table(4, step := 5) ORDER BY n
-  # Reads the public demo API (https://vgi-starter-api.query-farm.services/v1).
-  - name: items_per_category
-    check_sql: >-
-      SELECT count(*) = 3 AND sum(items) = 25
-      FROM (SELECT category, count(*) AS items
-            FROM terrain.examples.fetch_items('https://vgi-starter-api.query-farm.services/v1') GROUP BY category)
-
-  - name: gis_demo_input
-    reference_sql: "SELECT pair_id, source_height_m FROM terrain.main.demo_input ORDER BY pair_id"
+  - name: gis_ridge_tower_pairs
+    reference_sql: "SELECT pair_id, source_height_m FROM terrain.main.ridge_tower_pairs ORDER BY pair_id"
 
   - name: gis_visibility
-    reference_sql: "SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.demo_input)) ORDER BY pair_id"
+    reference_sql: "SELECT pair_id, visible, status FROM terrain.main.visibility((SELECT * FROM terrain.main.ridge_tower_pairs)) ORDER BY pair_id"
 
   - name: gis_dem_cells
     reference_sql: "SELECT count(*), max(elevation_m) FROM terrain.main.dem_cells('demo://ridge.tif')"
 
-  # Composed: dem_cells filtered by slope feeds visibility from a demo_input tower.
+  # Composed: dem_cells filtered by slope feeds visibility from a ridge_tower_pairs tower.
   - name: gis_steep_cells_visible
     reference_sql: >-
       SELECT count(*) AS visible_steep_cells FROM terrain.main.visibility((SELECT c.cell_id::VARCHAR AS pair_id,
       t.source_x, t.source_y, c.x AS target_x, c.y AS target_y, t.source_height_m, 2.0 AS target_height_m
-      FROM terrain.main.demo_input AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c
+      FROM terrain.main.ridge_tower_pairs AS t CROSS JOIN terrain.main.dem_cells('demo://ridge.tif') AS c
       WHERE t.pair_id = 'high' AND c.slope_deg > 45)) WHERE visible
 
-  # Composed: demo_input 'low' pair swept over whole-metre heights through visibility (answer 59).
+  # Composed: ridge_tower_pairs 'low' pair swept over whole-metre heights through visibility (answer 59).
   - name: gis_min_clearing_height
     reference_sql: >-
       SELECT min(h.r)::INTEGER AS min_height_m FROM terrain.main.visibility((SELECT 'h' || h.r AS pair_id,
       d.source_x, d.source_y, d.target_x, d.target_y, h.r::DOUBLE AS source_height_m, d.target_height_m
-      FROM terrain.main.demo_input AS d CROSS JOIN range(0, 201) AS h(r) WHERE d.pair_id = 'low')) AS v
+      FROM terrain.main.ridge_tower_pairs AS d CROSS JOIN range(0, 201) AS h(r) WHERE d.pair_id = 'low')) AS v
       JOIN range(0, 201) AS h(r) ON v.pair_id = 'h' || h.r WHERE v.visible

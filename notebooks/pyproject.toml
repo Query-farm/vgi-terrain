@@ -1,7 +1,7 @@
 [project]
 name = "vgi-terrain-notebooks"
 version = "0.2.0"
-description = "Distinguish sampled viewsheds and generic starter workflows"
+description = "Distinguish a sampled viewshed from a single terrain ray"
 requires-python = ">=3.11,<3.15"
 dependencies = [
     "vgi-example-notebooks[runner] @ git+https://github.com/Query-farm/vgi-example-notebooks@v0.3.26",

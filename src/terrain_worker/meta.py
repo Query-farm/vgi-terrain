@@ -28,9 +28,6 @@ SCHEMA_CATEGORIES = [
         "title": "GIS Analysis",
         "description": "Spatial analysis over query results and geospatial assets.",
     },
-    {"name": "text", "title": "Text", "description": "Functions that build or transform strings."},
-    {"name": "generators", "title": "Generators", "description": "Table functions that generate rows."},
-    {"name": "api", "title": "REST APIs", "description": "Table functions that read from HTTP APIs."},
 ]
 
 
@@ -58,102 +55,62 @@ def column(name: str, type_: pa.DataType, comment: str, *, nullable: bool = True
 
 
 CATALOG_DOC_LLM = (
-    "An example VGI worker generated from the Query.Farm starter template. It shows the three "
-    "shapes most workers need: a vectorized scalar function with an overload, a deterministic "
-    "table function with a named default argument, and a table function that pages through a REST "
-    "API with retries and an optional bearer token taken from a DuckDB secret or an environment "
-    "variable. Replace them with your own functions; keep the metadata complete so agents can "
-    "discover and call them."
+    "Sampled terrain visibility and DEM surfaces as DuckDB SQL functions. `terrain.main.visibility` "
+    "takes a subquery of tower/building endpoint pairs (pair_id, source_x/y, target_x/y, "
+    "source_height_m, target_height_m) and returns one line-of-sight assessment per pair: visible, "
+    "minimum clearance, worst obstruction, a 3D WKB sightline and an explicit status (visible, blocked, "
+    "outside_dem, nodata). `terrain.main.dem_cells(dem)` returns cell-centre elevation, slope and aspect "
+    "for a north-up projected metre DEM. Cross join observers with dem_cells and pass the pairs to "
+    "visibility for a viewshed. `terrain.main.ridge_tower_pairs` and the bundled `demo://ridge.tif` DEM "
+    "are synthetic offline sample inputs. No credentials are needed."
 )
 
 CATALOG_DOC_MD = (
     "# VGI terrain worker\n\n"
-    "**An example [VGI](https://query.farm/vgi) worker that brings custom functions into DuckDB "
-    "SQL.** It was generated from the Query.Farm starter template and is meant to be renamed and "
-    "rewritten: every function here demonstrates one pattern you will reuse, from vectorized "
-    "scalars and streaming table functions to a REST API reader that retries politely and reads "
-    "a bearer token from a DuckDB secret or the environment.\n\n"
-    "The worker speaks Apache Arrow to DuckDB over stdin/stdout, a Unix socket, or HTTP, so the "
-    "same code runs as a local subprocess or a hosted service. See the "
-    "[VGI documentation](https://query.farm/vgi/docs/) to learn more."
-)
-
-SCHEMA_DOC_LLM = (
-    "The `examples` schema holds the starter template's example functions, one per common worker "
-    "pattern. `greet(name)` and `greet(name, style)` are vectorized scalars: use them inside a "
-    "projection or predicate, one result per row; `style` is a constant that must be 'casual' or "
-    "'formal'. `sequence_table(count, step := 1)` is a deterministic table function that returns "
-    "`count` rows of `(n, squared)`; use it for demos, tests, and as a template for generators. "
-    "`fetch_items(base_url, page_size := 100)` reads every item from a paginated JSON REST API as "
-    "`(id, name, category, price)` rows, streaming one page per batch, retrying rate-limited "
-    "requests, and authenticating with a `terrain_api` DuckDB secret or the `TERRAIN_API_TOKEN` "
-    "environment variable. Scalars cannot take named arguments; table functions can."
-)
-
-SCHEMA_DOC_MD = (
-    "## examples\n\n"
-    "The starter template's example functions, one per common worker pattern.\n\n"
-    "- **Scalars** answer one question per row and slot into a projection or predicate.\n"
-    "- **Table functions** return sets of rows, streamed to DuckDB in Arrow batches.\n"
-    "- **REST readers** page through an HTTP API and authenticate with a DuckDB secret."
+    "**Terrain line-of-sight and viewsheds from DuckDB SQL.** Pass tower/building pairs from any "
+    "query to `visibility` and get minimum clearance, the worst obstruction and a 3D sightline per "
+    "pair, with earth curvature and refraction. `dem_cells` exposes a DEM's cell centres, elevation, "
+    "slope and aspect as rows, so a viewshed is an ordinary SQL cross join.\n\n"
+    "Distances and heights are metres; DEMs must be north-up in a projected metre CRS. Missing "
+    "terrain yields unknown visibility rather than a clear line. A synthetic ridge DEM "
+    "(`demo://ridge.tif`) and two sample tower pairs (`ridge_tower_pairs`) ship in the wheel, so every "
+    "example runs offline. See the [VGI documentation](https://query.farm/vgi/docs/) to learn more."
 )
 
 AGENT_TEST_TASKS = [
-    {"name": "formal_greeting", "prompt": "Using the terrain worker, greet the name 'Grace' formally."},
     {
-        "name": "sum_of_squares",
-        "prompt": "Using the terrain worker, what is the sum of the squared column for the first 10 rows "
-        "of the sequence with the default step?",
+        "name": "gis_ridge_tower_pairs",
+        "prompt": "Inspect the two tower heights. Use the bundled synthetic inputs and return the "
+        "columns and ordering shown in its catalog example.",
     },
     {
-        "name": "stepped_sequence",
-        "prompt": "List the n values of a 4-row sequence that steps by 5, in ascending order.",
+        "name": "gis_visibility",
+        "prompt": "A tall tower clears the ridge; a low tower is blocked. Use the bundled synthetic"
+        " inputs and return the columns and ordering shown in its catalog example.",
     },
     {
-        "name": "items_per_category",
-        "prompt": (
-            "The items API is running at https://vgi-starter-api.query-farm.services/v1. "
-            "How many items does it have in each category?"
-        ),
+        "name": "gis_dem_cells",
+        "prompt": "Count cells and find the ridge elevation. Use the bundled synthetic inputs and "
+        "return the columns and ordering shown in its catalog example.",
+    },
+    {
+        "name": "gis_steep_cells_visible",
+        "prompt": "Using the terrain worker's bundled ridge DEM (demo://ridge.tif) and the tower of the 'high' "
+        "sample pair (its source position and its 80 m height), with receivers 2 m above ground, how many DEM "
+        "cells with a slope steeper than 45 degrees can that tower see? Return one row with one BIGINT column "
+        "named visible_steep_cells.",
+    },
+    {
+        "name": "gis_min_clearing_height",
+        "prompt": "Keeping everything else about the 'low' sample tower pair the same, what is the smallest "
+        "whole-metre tower height (source_height_m) for which the terrain worker reports a clear line of "
+        "sight over the ridge? Return one row with one INTEGER column named min_height_m.",
     },
 ]
 
-AGENT_TEST_TASKS.extend(
-    [
-        {
-            "name": "gis_demo_input",
-            "prompt": "Inspect the two tower heights. Use the bundled synthetic inputs and return the "
-            "columns and ordering shown in its catalog example.",
-        },
-        {
-            "name": "gis_visibility",
-            "prompt": "A tall tower clears the ridge; a low tower is blocked. Use the bundled synthetic"
-            " inputs and return the columns and ordering shown in its catalog example.",
-        },
-        {
-            "name": "gis_dem_cells",
-            "prompt": "Count cells and find the ridge elevation. Use the bundled synthetic inputs and "
-            "return the columns and ordering shown in its catalog example.",
-        },
-        {
-            "name": "gis_steep_cells_visible",
-            "prompt": "Using the terrain worker's bundled ridge DEM (demo://ridge.tif) and the tower of the 'high' "
-            "demo pair (its source position and its 80 m height), with receivers 2 m above ground, how many DEM "
-            "cells with a slope steeper than 45 degrees can that tower see? Return one row with one BIGINT column "
-            "named visible_steep_cells.",
-        },
-        {
-            "name": "gis_min_clearing_height",
-            "prompt": "Keeping everything else about the 'low' demo tower pair the same, what is the smallest "
-            "whole-metre tower height (source_height_m) for which the terrain worker reports a clear line of "
-            "sight over the ridge? Return one row with one INTEGER column named min_height_m.",
-        },
-    ]
-)
-
 CATALOG_TAGS = {
     "vgi.title": "Terrain analysis",
-    "vgi.subtitle": "Example DuckDB functions to rename and replace: a scalar, a table function and a REST API reader.",
+    "vgi.subtitle": "DEM visibility, viewsheds, slope and aspect from SQL.",
     "vgi.doc_llm": CATALOG_DOC_LLM,
     "vgi.doc_md": CATALOG_DOC_MD,
     "vgi.source_url": SOURCE_URL,

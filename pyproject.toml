@@ -1,6 +1,6 @@
 [project]
 name = "vgi-terrain-worker"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python GIS terrain analysis exposed as VGI SQL functions."
 readme = "README.md"
 license = "0BSD"
@@ -21,9 +21,6 @@ vgi-terrain-worker = "terrain_worker.worker:main"
 
 [dependency-groups]
 dev = [
-    # The pushdown recipe evaluates predicates locally; a worker that uses filter
-    # pushdown must add the `haybarn` extra to its own dependencies.
-    "vgi-python[haybarn]>=0.51.1,<0.52",
     "pytest>=8.4",
     "mypy>=1.18",
     "ruff>=0.14",
@@ -53,7 +50,7 @@ ignore = ["D203", "D213", "RUF012"]
 [tool.mypy]
 strict = true
 python_version = "3.13"
-files = ["src", "tests", "examples", "scripts/run_demo.py", "scripts/verify_package.py", "scripts/verify_container.py"]
+files = ["src", "tests", "scripts/run_demo.py", "scripts/verify_package.py", "scripts/verify_container.py"]
 
 [[tool.mypy.overrides]]
 module = ["vgi.*", "vgi_rpc.*"]
