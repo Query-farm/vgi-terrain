@@ -31,6 +31,18 @@ SCHEMA_CATEGORIES = [
 ]
 
 
+# Upstream specs, data providers and libraries the catalog docs link to (VGI183).
+CATALOG_REFERENCES_MD = (
+    "\n\n## Sources and references\n\n"
+    "- [Rasterio](https://rasterio.readthedocs.io/) on [GDAL](https://gdal.org/): reads and samples the "
+    "DEM rasters.\n"
+    "- [OGC GeoTIFF](https://www.ogc.org/standards/geotiff/): the georeferenced raster format expected for "
+    "DEM inputs such as the bundled `demo://ridge.tif`.\n"
+    "- [pyproj](https://pyproj4.github.io/pyproj/stable/) ([PROJ](https://proj.org/)): coordinate "
+    "transforms from endpoint CRSs into the DEM's projected metre CRS."
+)
+
+
 def keywords_array(keywords: str) -> str:
     """Turn ``"a, b, c"`` into the JSON array string ``vgi.keywords`` requires."""
     return json.dumps([k.strip() for k in keywords.split(",") if k.strip()])

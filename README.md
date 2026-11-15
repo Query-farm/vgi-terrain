@@ -62,7 +62,7 @@ Without a checkout, attach the tagged release instead:
 
 ```sql
 ATTACH 'terrain' (TYPE vgi,
-  LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-terrain@v0.2.0 vgi-terrain-worker');
+  LOCATION 'uvx --from git+https://github.com/Query-farm/vgi-terrain@v0.2.1 vgi-terrain-worker');
 ```
 
 The following template expects your own source tables and paths:

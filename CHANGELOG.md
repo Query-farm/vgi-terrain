@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Docs link to upstream sources: the catalog `vgi.doc_md` gains a Sources and references section linking Rasterio, GDAL, the OGC GeoTIFF standard and pyproj (VGI183).
+- The README quick-start install pin now points at the new release.
+
 ## 0.2.0 (2026-11-14)
 
 - Removed the starter template's demo schema (`examples.greet`/`fetch_items`/`sequence_table`), `demo_input` and the placeholder `terrain_api` secret type. The worker no longer registers any secret type and needs no credentials.
