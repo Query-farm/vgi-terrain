@@ -5,6 +5,7 @@
 - Removed the starter template's demo schema (`examples.greet`/`fetch_items`/`sequence_table`), `demo_input` and the placeholder `terrain_api` secret type. The worker no longer registers any secret type and needs no credentials.
 - The bundled sample tower pairs are now `terrain.main.ridge_tower_pairs` (same columns and rows as the former `demo_input`); all examples, executable examples and agent tasks use it.
 - Removed the starter SDK recipes (`examples/`), the mock REST API and the starter-only paginated inventory notebook.
+- The catalog comment is now a short plain-text description of what the worker covers; the detailed analysis notes remain in the catalog's `vgi.doc_md` and `vgi.doc_llm` documentation.
 
 ## 0.1.0 (2026-11-14)
 
