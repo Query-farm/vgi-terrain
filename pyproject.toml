@@ -5,7 +5,7 @@ description = "Python GIS terrain analysis exposed as VGI SQL functions."
 readme = "README.md"
 license = "0BSD"
 license-files = ["LICENSE"]
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "numpy>=2.2,<3",
     "rasterio>=1.4,<2",
@@ -36,7 +36,7 @@ packages = ["src/terrain_worker"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF", "D"]
@@ -49,7 +49,7 @@ ignore = ["D203", "D213", "RUF012"]
 
 [tool.mypy]
 strict = true
-python_version = "3.13"
+python_version = "3.14"
 files = ["src", "tests", "scripts/run_demo.py", "scripts/verify_package.py", "scripts/verify_container.py"]
 
 [[tool.mypy.overrides]]
