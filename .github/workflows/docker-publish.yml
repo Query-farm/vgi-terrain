@@ -4,6 +4,8 @@ name: Publish image
 # Publication is manual; source pushes run ordinary test CI only.
 
 on:
+  push:
+    tags: ['v*.*.*']
   workflow_dispatch:
 
 permissions:
